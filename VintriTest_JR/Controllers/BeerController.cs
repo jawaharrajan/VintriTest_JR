@@ -11,6 +11,10 @@ namespace VintriTest_JR.Controllers
     {
         private readonly IApiService _apiService;
 
+        public BeerController()
+        {
+            
+        }
         public BeerController(IApiService apiService)
         {
             _apiService = apiService;
@@ -20,8 +24,15 @@ namespace VintriTest_JR.Controllers
         [HttpGet("GetBeers")]
         public async Task<IActionResult> GetBeers()
         {
-            var result = await _apiService.GetBeerIdAndName();
-            return Ok(result);
+            try
+            {
+                var result = await _apiService.GetBeerIdAndName();
+                return Ok(result);
+            }
+            catch (Exception ex) 
+            {
+                return BadRequest("Error getting Beer information.");
+            }
         }
 
         //Allows users to sumbit a rating for given beer - must know some Beer Id's
@@ -29,6 +40,9 @@ namespace VintriTest_JR.Controllers
         [ServiceFilter(typeof(UsernameValidationFilterAttribute))]
         public async Task<IActionResult> SubmitRating([FromBody] Ratings ratingModel,int Id)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             try
             {
                 var isValidId = await _apiService.IsBeerIdValid(Id);
@@ -37,7 +51,7 @@ namespace VintriTest_JR.Controllers
             }
             catch
             {
-                return BadRequest("Error submitting rating");
+                return BadRequest("Error submitting rating.");
             }
         }
 
